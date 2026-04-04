@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'game_state.dart';
 import 'nose_screen.dart';
 import 'kanaal_screen.dart';
 
@@ -37,9 +39,24 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   final PageController _pageController = PageController(initialPage: 0);
+  Timer? _saveTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load game state on startup
+    GameState().loadGame();
+    // Start periodic save every 30 seconds
+    _saveTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      GameState().saveGame();
+    });
+  }
 
   @override
   void dispose() {
+    // Save before app closes
+    GameState().saveGame();
+    _saveTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -50,6 +67,10 @@ class _MainNavigationState extends State<MainNavigation> {
       body: PageView(
         controller: _pageController,
         physics: const ClampingScrollPhysics(),
+        onPageChanged: (index) {
+          // Save when switching screens
+          GameState().saveGame();
+        },
         children: [
           const NoseScreen(),
           const KanaalScreen(),

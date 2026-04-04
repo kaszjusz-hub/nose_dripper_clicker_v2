@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 
 // ─── Upgrades ────────────────────────────────────────────────────────────────
 
@@ -67,6 +70,9 @@ class GameState {
     _bacteriaSpawnTime = DateTime.now();
     _lastBacteriaSpawnCheck = DateTime.now();
   }
+
+  /// Public full reset (also used by cheat tools)
+  void fullReset() => _resetForNewGame();
 
   // Chance to spawn bacteria on click
   void _maybeSpawnBacteria() {
@@ -136,6 +142,7 @@ class GameState {
 
   // ── Internal ─────────────────────────────────────────────────────────
   late Random _random;
+  // ignore: unused_field
   late DateTime _bacteriaSpawnTime;
   late DateTime _lastBacteriaSpawnCheck;
   Timer? _gameLoopTimer;
@@ -479,4 +486,82 @@ class GameState {
       activeVirusSlots++;
     }
   }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  //  PERSISTENCE
+  // ──────────────────────────────────────────────────────────────────────────
+
+  Future<String> get _savePath async {
+    final dir = await getApplicationDocumentsDirectory();
+    return '${dir.path}${Platform.pathSeparator}nose_dripper_save.json';
+  }
+
+  /// Serialize full game state to JSON
+  Future<void> saveGame() async {
+    final data = {
+      'tankMl': tankMl,
+      'glutCount': glutCount,
+      'comboPoints': comboPoints,
+      'noseLevels': Map<int, int>.from(noseLevels),
+      'roomLevels': Map<int, int>.from(roomLevels),
+      'dnaUpgradeLevels': Map<String, int>.from(dnaUpgradeLevels),
+      'dnaPoints': dnaPoints,
+      'unspentDna': unspentDna,
+      'bacteriaInTank': bacteriaInTank,
+      'virusEvolutionUnlocked': virusEvolutionUnlocked,
+      'maxVirusSlots': maxVirusSlots,
+      'activeVirusSlots': activeVirusSlots,
+      'activeViruses': List<Map<String, dynamic>>.from(activeViruses),
+      'inventory': List<Map<String, dynamic>>.from(inventory),
+    };
+
+    final path = await _savePath;
+    final file = File(path);
+    await file.writeAsString(jsonEncode(data));
+  }
+
+  /// Load game state from JSON. Returns true if successful.
+  Future<bool> loadGame() async {
+    try {
+      final path = await _savePath;
+      final file = File(path);
+      if (!await file.exists()) return false;
+
+      final content = await file.readAsString();
+      final data = jsonDecode(content) as Map<String, dynamic>;
+
+      tankMl = (data['tankMl'] as num).toDouble();
+      glutCount = data['glutCount'] as int;
+      comboPoints = (data['comboPoints'] as num).toDouble();
+      noseLevels = Map<int, int>.from((data['noseLevels'] as Map).map((k, v) => MapEntry(int.parse(k.toString()), v as int)));
+      roomLevels = Map<int, int>.from((data['roomLevels'] as Map).map((k, v) => MapEntry(int.parse(k.toString()), v as int)));
+      dnaUpgradeLevels = Map<String, int>.from(data['dnaUpgradeLevels'] as Map);
+      dnaPoints = data['dnaPoints'] as int;
+      unspentDna = data['unspentDna'] as int;
+      bacteriaInTank = data['bacteriaInTank'] as int;
+      virusEvolutionUnlocked = data['virusEvolutionUnlocked'] as bool;
+      maxVirusSlots = data['maxVirusSlots'] as int;
+      activeVirusSlots = data['activeVirusSlots'] as int;
+      activeViruses = List<Map<String, dynamic>>.from(data['activeViruses'] as List);
+      inventory = List<Map<String, dynamic>>.from(data['inventory'] as List);
+
+      return true;
+    } catch (e) {
+      // If loading fails, start fresh
+      _resetForNewGame();
+      return false;
+    }
+  }
+
+  /// Check if a save file exists
+  Future<bool> get hasSaveGame async {
+    try {
+      final path = await _savePath;
+      final file = File(path);
+      return await file.exists();
+    } catch (_) {
+      return false;
+    }
+  }
 }
+

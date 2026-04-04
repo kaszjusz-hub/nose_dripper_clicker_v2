@@ -1,5 +1,6 @@
-import 'dart:async';
+
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'game_state.dart';
 
@@ -12,9 +13,9 @@ class KanaalScreen extends StatefulWidget {
 
 class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMixin {
   final GameState gs = GameState.instance;
-  Timer? _timer;
   late final AnimationController _waveController;
   late final AnimationController _bubbleController;
+  VoidCallback? _tickListener;
 
   @override
   void initState() {
@@ -27,19 +28,20 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
       duration: const Duration(seconds: 4),
       vsync: this,
     )..repeat();
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+    // Use shared game loop instead of local timer
+    _tickListener = () {
       if (mounted) {
-        gs.gameTick(0.1);
         setState(() {});
       }
-    });
+    };
+    gs.addTickListener(_tickListener!);
   }
 
   @override
   void dispose() {
+    if (_tickListener != null) gs.removeTickListener(_tickListener!);
     _waveController.dispose();
     _bubbleController.dispose();
-    _timer?.cancel();
     super.dispose();
   }
 
@@ -98,9 +100,19 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  'DNA: ${gs.unspentDna}',
-                  style: const TextStyle(color: Color(0xFF5ab4ff), fontSize: 14),
+                Row(
+                  children: [
+                    Text(
+                      'DNA: ${gs.unspentDna}',
+                      style: const TextStyle(color: Color(0xFF5ab4ff), fontSize: 14),
+                    ),
+                    if (kDebugMode)
+                      IconButton(
+                        icon: const Icon(Icons.build, size: 20),
+                        color: const Color(0xFF7a8a62),
+                        onPressed: _openDevCheats,
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -382,6 +394,161 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _openDevCheats() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161c10),
+      isScrollControlled: true,
+      builder: (_) => _DevCheatsPanel(gs: gs),
+    );
+  }
+}
+
+class _DevCheatsPanel extends StatefulWidget {
+  final GameState gs;
+  const _DevCheatsPanel({required this.gs});
+
+  @override
+  State<_DevCheatsPanel> createState() => _DevCheatsPanelState();
+}
+
+class _DevCheatsPanelState extends State<_DevCheatsPanel> {
+  final _glutController = TextEditingController();
+  final _dnaController = TextEditingController();
+  final _tankController = TextEditingController();
+
+  @override
+  void dispose() {
+    _glutController.dispose();
+    _dnaController.dispose();
+    _tankController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 16,
+        right: 16,
+        top: 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('🔧 DEV TOOLS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFcdd9b5))),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _glutController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Color(0xFFcdd9b5)),
+                  decoration: const InputDecoration(
+                    labelText: 'Dodaj gluty',
+                    labelStyle: TextStyle(color: Color(0xFF7a8a62)),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2d3d1e))),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF7ec850))),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final amount = int.tryParse(_glutController.text) ?? 0;
+                  widget.gs.glutCount += amount;
+                  _glutController.clear();
+                  widget.gs.saveGame();
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7ec850)),
+                child: const Text('Dodaj', style: TextStyle(color: Colors.black)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _dnaController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Color(0xFFcdd9b5)),
+                  decoration: const InputDecoration(
+                    labelText: 'Dodaj DNA',
+                    labelStyle: TextStyle(color: Color(0xFF7a8a62)),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2d3d1e))),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF7ec850))),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final amount = int.tryParse(_dnaController.text) ?? 0;
+                  widget.gs.unspentDna += amount;
+                  _dnaController.clear();
+                  widget.gs.saveGame();
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7ec850)),
+                child: const Text('Dodaj', style: TextStyle(color: Colors.black)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tankController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Color(0xFFcdd9b5)),
+                  decoration: const InputDecoration(
+                    labelText: 'Ustaw tankMl (ml)',
+                    labelStyle: TextStyle(color: Color(0xFF7a8a62)),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2d3d1e))),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF7ec850))),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final amount = double.tryParse(_tankController.text) ?? 0.0;
+                  widget.gs.tankMl = amount;
+                  _tankController.clear();
+                  widget.gs.saveGame();
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7ec850)),
+                child: const Text('Ustaw', style: TextStyle(color: Colors.black)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                widget.gs.fullReset();
+                widget.gs.saveGame();
+                setState(() {});
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text('RESET STAN', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFcc3333)),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nose Dripper Clicker</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --slime: #7ec850;
+    --slime-dark: #4a8a2a;
+    --slime-glow: #a8ff5a;
+    --bg: #0d0f0a;
+    --bg2: #131710;
+    --bg3: #1a1f13;
+    --card: #161c10;
+    --border: #2d3d1e;
+    --text: #cdd9b5;
+    --text-dim: #7a8a62;
+    --accent: #ff6b35;
+    --virus: #cc3333;
+    --dna: #5ab4ff;
+    --premium: #f0d060;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Drip background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(126,200,80,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(90,180,255,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 64px 0 48px;
+    position: relative;
+  }
+
+  .hero-drip {
+    font-size: 72px;
+    line-height: 1;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 18px var(--slime));
+    animation: drip 3s ease-in-out infinite;
+  }
+
+  @keyframes drip {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  .hero h1 {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(38px, 8vw, 72px);
+    color: var(--slime);
+    text-shadow: 0 0 30px var(--slime-dark), 0 0 60px rgba(126,200,80,0.3);
+    letter-spacing: 2px;
+    line-height: 1.1;
+  }
+
+  .hero-sub {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .genre-tags {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--slime);
+    background: rgba(126,200,80,0.07);
+    letter-spacing: 1px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-top: 52px;
+  }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--slime-dark);
+    margin-bottom: 8px;
+  }
+
+  .section h2 {
+    font-family: 'Creepster', cursive;
+    font-size: 30px;
+    color: var(--slime);
+    text-shadow: 0 0 12px rgba(126,200,80,0.3);
+    margin-bottom: 16px;
+    position: relative;
+    padding-bottom: 10px;
+  }
+
+  .section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 48px; height: 2px;
+    background: linear-gradient(90deg, var(--slime), transparent);
+  }
+
+  /* ── PITCH BOX ── */
+  .pitch-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--slime);
+    border-radius: 8px;
+    padding: 24px 28px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pitch-box::before {
+    content: '"';
+    position: absolute;
+    top: -10px; left: 16px;
+    font-family: 'Creepster', cursive;
+    font-size: 80px;
+    color: rgba(126,200,80,0.08);
+    line-height: 1;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 6px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--slime-dark);
+    transform: translateY(-2px);
+  }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .card h3 {
+    font-family: 'Creepster', cursive;
+    font-size: 19px;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .card h3.slime { color: var(--slime); }
+  .card h3.dna { color: var(--dna); }
+  .card h3.virus { color: var(--virus); }
+  .card h3.premium { color: var(--premium); }
+  .card h3.bacteria { color: #e0a030; }
+
+  .card p {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .card .badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  .badge-lock { background: rgba(255,255,255,0.05); color: var(--text-dim); border: 1px solid var(--border); }
+  .badge-free { background: rgba(126,200,80,0.1); color: var(--slime); border: 1px solid var(--slime-dark); }
+  .badge-rebirth { background: rgba(90,180,255,0.1); color: var(--dna); border: 1px solid #2a6090; }
+
+  /* ── FLOW BLOCK ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 8px;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .flow-step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'Creepster', cursive;
+    font-size: 32px;
+    color: var(--slime);
+    opacity: 0.25;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: right;
+  }
+
+  .step-body h4 {
+    font-family: 'Creepster', cursive;
+    font-size: 18px;
+    color: var(--slime);
+    margin-bottom: 4px;
+  }
+
+  .step-body p {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  /* ── SCREEN LAYOUT ── */
+  .screen-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .screen-header {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    font-family: 'Creepster', cursive;
+    font-size: 18px;
+    color: var(--slime);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .screen-body {
+    padding: 16px 20px;
+  }
+
+  .sub-item {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(45,61,30,0.5);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .sub-item:last-child { border-bottom: none; }
+
+  .sub-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .sub-item h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .sub-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ── COMBO ── */
+  .combo-bar-wrap {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+  }
+
+  .combo-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .combo-bar {
+    height: 10px;
+    background: var(--bg);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .combo-fill {
+    height: 100%;
+    width: 62%;
+    background: linear-gradient(90deg, var(--slime-dark), var(--slime-glow));
+    border-radius: 5px;
+  }
+
+  .combo-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .combo-ticks span { color: var(--slime); font-weight: bold; }
+
+  .combo-desc {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── TODO ── */
+  .todo-list {
+    list-style: none;
+    margin-top: 8px;
+  }
+
+  .todo-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    color: var(--text-dim);
+  }
+
+  .todo-list li:last-child { border-bottom: none; }
+
+  .todo-list li::before {
+    content: '○';
+    color: var(--slime-dark);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 52px 0 0;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 32px 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  /* ── HIGHLIGHT ── */
+  .hl { color: var(--slime); font-weight: 700; }
+  .hl-dna { color: var(--dna); font-weight: 700; }
+  .hl-red { color: var(--virus); font-weight: 700; }
+  .hl-gold { color: var(--premium); font-weight: 700; }
+
+  /* ── NOTE ── */
+  .note {
+    background: rgba(255,107,53,0.06);
+    border: 1px solid rgba(255,107,53,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #c08060;
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .note::before { content: '⚠'; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-drip">🤧</div>
+    <h1>Nose Dripper Clicker</h1>
+    <div class="hero-sub">Game Design Document · v0.1 · 2025</div>
+    <div class="genre-tags">
+      <span class="tag">Incremental</span>
+      <span class="tag">Clicker</span>
+      <span class="tag">Idle</span>
+      <span class="tag">Mobile</span>
+      <span class="tag">Spooky</span>
+    </div>
+  </div>
+
+  <!-- PITCH -->
+  <div class="section">
+    <div class="section-label">// 01 — pitch</div>
+    <h2>Czym jest ta gra?</h2>
+    <div class="pitch-box">
+      Pewna postać jest chora. Bardzo chora. Z jej nosa kapią gluty — i to dosłownie — prosto na Twój ekran.<br><br>
+      Twoim zadaniem jest klikać, zbierać, ulepszać i — gdy czas dojrzeje — <span class="hl">wyleczyć chorego</span>. Ale zanim to nastąpi, przez kanał odpływowy popłyną litry zielonej mazi, w której zakwitnie niezdrowe życie: bakterie, a może i coś gorszego.<br><br>
+      <span class="hl-dna">Nose Dripper Clicker</span> to spooky idler na mobile z rozbudowanym systemem prestiżu, drzewkiem mutacji DNA oraz ekwipunkiem wirusów — opakowany w lepki, niepokojący klimat, który trudno odłożyć na bok.
+    </div>
+  </div>
+
+  <!-- WALUTY -->
+  <div class="section">
+    <div class="section-label">// 02 — systemy walut</div>
+    <h2>Waluty i zasoby</h2>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-icon">🟢</div>
+        <h3 class="slime">Gluty (ml)</h3>
+        <p>Bazowa jednostka gry. Spływają z nosa postaci do Kanału przy każdym kliknięciu i pasywnie dzięki ulepszeniom Pokoju. Są podstawą całej ekonomii.</p>
+        <span class="badge badge-free">od startu</span>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🧬</div>
+        <h3 class="dna">Punkty DNA</h3>
+        <p>Waluta prestiżu zdobywana przy Rebirth. Każdy <b>niewydany</b> punkt DNA zwiększa bazowy mnożnik glutów o <span class="hl-dna">+10%</span>. Wydane punkty idą na trwałe ulepszenia w Sklepie DNA.</p>
+        <span class="badge badge-rebirth">po 1. Rebirth</span>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🦠</div>
+        <h3 class="bacteria">Bakteria</h3>
+        <p>Pojawia się w Kanale co <span class="hl">3–5 minut</span> (losowo). Maksymalnie 5 jednocześnie w zbiorniku. Kliknięcie aktywuje bakterię — może zamienić się w wirusa po odblokowaniu odpowiedniej mutacji w Sklepie DNA.</p>
+        <span class="badge badge-lock">po 3M ml w zbiorniku</span>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">☣️</div>
+        <h3 class="virus">Wirus</h3>
+        <p>Rzadka, potężna odmiana bakterii. Bazowa szansa na mutację: <span class="hl-red">2%</span>. Wirusy trafiają do Ekwipunku i zajmują aktywne sloty, dając stałe bonusy do całej rozgrywki.</p>
+        <span class="badge badge-rebirth">po 1. Rebirth + DNA unlock</span>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🧻</div>
+        <h3 class="premium">Chusteczka</h3>
+        <p>Waluta premium. Zdobywana za oglądanie reklam lub zakup. Wydawana wyłącznie na kosmetykę: skórki glutów (kolor, efekty wizualne) i niestandardowe tła.</p>
+        <span class="badge badge-lock">premium / reklamy</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EKRANY -->
+  <div class="section">
+    <div class="section-label">// 03 — struktura ekranów</div>
+    <h2>Nawigacja i układ</h2>
+    <p style="color:var(--text-dim); margin-bottom:16px; font-size:13.5px;">Gra składa się z dwóch głównych ekranów przełączanych gestem swipe (góra/dół) lub strzałkami kierunkowymi. Brak zakładek — interfejs jest pionowy i płynny.</p>
+
+    <!-- EKRAN 1 -->
+    <div class="screen-block">
+      <div class="screen-header">⬆ Ekran Postaci <span style="font-size:13px; font-family:'Share Tech Mono',monospace; color:var(--text-dim); margin-left:auto;">swipe dół → Kanał</span></div>
+      <div class="screen-body">
+
+        <div class="sub-item">
+          <div class="sub-icon">👃</div>
+          <div>
+            <h4>Przycisk NOS (tap area)</h4>
+            <p>Główny obszar klikania. Dotknięcie generuje gluty. Wizualnie: spływające krople z nosa postaci tworzą animację spływu po ekranie. Trzy poziomy ulepszenia dostępne w Szufladzie Nosa — każde zwiększa yield za kliknięcie.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🗄️</div>
+          <div>
+            <h4>Szuflada „Nose"</h4>
+            <p>Panel z 3 ulepszeniami nosa (odblokowanie kolejnych poprzez Sklep DNA). Każde ulepsza ilość glutów za kliknięcie. Kupowane za gluty, resetowane przy Rebirth.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🛋️</div>
+          <div>
+            <h4>Szuflada „Room"</h4>
+            <p>Panel meblowania/dekorowania pokoju postaci. Każdy zakupiony mebel/element dodaje pasywny dryp glutów na sekundę. Kupowane za gluty, resetowane przy Rebirth.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">⚙️</div>
+          <div>
+            <h4>Menu (prawy górny róg)</h4>
+            <p>Koło zębate otwiera panel ustawień: głośność muzyki i dźwięków, poziom szczegółowości grafiki, wybór języka.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- EKRAN 2 -->
+    <div class="screen-block" style="margin-top:14px;">
+      <div class="screen-header">⬇ Ekran Kanału <span style="font-size:13px; font-family:'Share Tech Mono',monospace; color:var(--text-dim); margin-left:auto;">swipe góra → Postać</span></div>
+      <div class="screen-body">
+
+        <div class="sub-item">
+          <div class="sub-icon">🫧</div>
+          <div>
+            <h4>Zbiornik (animowany slime)</h4>
+            <p>Prawie cały ekran wypełnia się przezroczystą mazią. Aktualny stan zbiornika (w ml) wyświetlony jako napis nad poziomem cieczy. <b>Brak stałego limitu</b> — zbiornik nie blokuje nadpływu, przelewa się wizualnie.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🦠</div>
+          <div>
+            <h4>Bakterie w zbiorniku</h4>
+            <p>Pojawiają się jako pływające obiekty po przekroczeniu progu <span class="hl">3 000 000 ml</span>. Maksymalnie 5 sztuk jednocześnie. Kliknięcie aktywuje bakterię — po odblok. mutacji może dać wirusa.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🧫</div>
+          <div>
+            <h4>Przycisk Rebirth</h4>
+            <p>Pojawia się jako oddzielny, wyraźny przycisk po osiągnięciu progu <span class="hl">10 000 000 ml</span>. Przed naciśnięciem widoczna informacja: ile Punktów DNA zostanie przyznanych. Zbiornik nie zatrzymuje się — można ignorować próg i grać dalej.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🎒</div>
+          <div>
+            <h4>Ekwipunek (po znalezieniu 1. wirusa)</h4>
+            <p>Ikona pojawia się na dole ekranu Kanału. <b>10 slotów</b> na przedmioty (kafelki) + <b>5 slotów</b> na aktywne wirusy (początkowo 1 aktywny, pozostałe do odblokowania w Sklepie DNA).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- REBIRTH -->
+  <div class="section">
+    <div class="section-label">// 04 — system prestiżu</div>
+    <h2>Rebirth — Wyleczenie</h2>
+
+    <div class="flow">
+
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Warunek odblokowania</h4>
+          <p>Gracz osiąga <span class="hl">10 000 000 ml</span> w zbiorniku. Pojawia się przycisk Rebirth z podglądem nagrody DNA. Zbiornik nadal się napełnia — gracz decyduje kiedy nacisnąć.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Reset i nagroda</h4>
+          <p>Ulepszenia Nosa i Pokoju wracają do poziomu 0. Gluty w zbiorniku wracają do 0. Gracz otrzymuje <span class="hl-dna">Punkty DNA</span> — za pierwsze 10M ml: <b>10 punktów</b>. Każdy kolejny próg 10M ml jest o <b>30% droższy</b> (wymaga więcej ml). Odblokowany zostaje <b>Sklep DNA</b>.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Efekt punktów DNA</h4>
+          <p>Każdy punkt DNA <b>dodany do puli (niewydany)</b> zwiększa bazowy mnożnik glutów o <span class="hl-dna">+10%</span>. Punkty wydane w Sklepie DNA nie liczą się do mnożnika — gracz balansuje między siłą pasywną a stałymi ulepszeniami.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Fabularnie: Wyleczenie</h4>
+          <p>Rebirth to moment wyleczenia postaci z choroby. Kanał zostaje odetkany, maź odpływa, postać odżywa — po czym… choroba wraca. Następuje nowy cykl. <span style="color:var(--text-dim)">(Szczegółowa animacja/narracja do dopracowania — TODO)</span></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SKLEP DNA -->
+  <div class="section">
+    <div class="section-label">// 05 — sklep dna</div>
+    <h2>Sklep DNA — Lista Mutacji</h2>
+    <p style="color:var(--text-dim); margin-bottom:14px; font-size:13.5px;">Lista z dużymi ikonami i opisem każdej mutacji. Ulepszenia z tego sklepu <b>nie resetują się przy Rebirth</b>. Część dostępna jednorazowo (unlock), część ma poziomy (lvl).</p>
+
+    <div class="screen-block">
+      <div class="screen-body">
+
+        <div class="sub-item">
+          <div class="sub-icon">👃</div>
+          <div>
+            <h4>Dodatkowe sloty Nosa · poziomy</h4>
+            <p>Odblokowanie 4., 5., 6. ulepszenia w Szufladzie Nosa. Każdy level zwiększa limit dostępnych ulepszeń kliknięcia.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🛋️</div>
+          <div>
+            <h4>Rozbudowa Pokoju · poziomy</h4>
+            <p>Odblokowanie dodatkowych slotów meblowych i silniejszych mebli. Każdy level podnosi pułap pasywnego drypu.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🦠</div>
+          <div>
+            <h4>Ewolucja Bakterii · unlock</h4>
+            <p>Odblokowanie możliwości pojawienia się wirusów. Po zakupie każda kliknięta bakteria ma szansę (bazowo 2%) na mutację w wirusa.</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">☣️</div>
+          <div>
+            <h4>Wirulentnośc · poziomy</h4>
+            <p>Zwiększa % szansę mutacji bakterii w wirusa. Każdy level +X% do bazowej szansy (wartości do ustalenia w balansie).</p>
+          </div>
+        </div>
+
+        <div class="sub-item">
+          <div class="sub-icon">🎒</div>
+          <div>
+            <h4>Dodatkowe sloty wirusów · unlock</h4>
+            <p>Odblokowanie 2., 3., 4. i 5. aktywnego slotu na wirusa w Ekwipunku. Każdy dodatkowy aktywny wirus sumuje swój bonus.</p>
+          </div>
+        </div>
+
+        <div class="sub-item" style="border-bottom:none;">
+          <div class="sub-icon">⚗️</div>
+          <div>
+            <h4>[RESERVED] Przyszłe mutacje</h4>
+            <p>Miejsce na rozbudowę drzewka w kolejnych wersjach gry (fabuła, nowe typy wirusów, specjalne zdolności pasywne).</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="note">Sklep DNA pojawia się po pierwszym Rebirth i pozostaje trwale dostępny w interfejsie (np. dolny pasek nawigacji lub zakładka w menu).</div>
+  </div>
+
+  <!-- COMBO -->
+  <div class="section">
+    <div class="section-label">// 06 — system combo</div>
+    <h2>System Combo</h2>
+
+    <div class="combo-bar-wrap">
+      <div class="combo-label">Combo Bar — zakres aktywny: 0 – 100 · pasek wizualny: 0 – 200</div>
+      <div class="combo-bar"><div class="combo-fill"></div></div>
+      <div class="combo-ticks">
+        <span>5 → 1.05×</span>
+        <span>25 → 1.25×</span>
+        <span>50 → 1.50×</span>
+        <span>75 → 1.75×</span>
+        <span>100 → 2.00×</span>
+      </div>
+      <div class="combo-desc">
+        Pasek stale spada o <span class="hl">3 pkt / sek</span>. Każde kliknięcie daje <span class="hl">+1 pkt</span>. Odświeżanie 10× na sekundę (co 100 ms).<br><br>
+        <b>Progi mnożnika</b> — co każde <span class="hl">5 punktów combo</span> (od 5 do 100) mnożnik rośnie o <span class="hl">+0.05×</span>. Łącznie 20 szczebli:<br><br>
+        <span class="hl">5 → 1.05×</span> · <span class="hl">10 → 1.10×</span> · <span class="hl">15 → 1.15×</span> · <span class="hl">20 → 1.20×</span> · <span class="hl">25 → 1.25×</span> · <span class="hl">30 → 1.30×</span> · <span class="hl">35 → 1.35×</span> · <span class="hl">40 → 1.40×</span> · <span class="hl">45 → 1.45×</span> · <span class="hl">50 → 1.50×</span> · <span class="hl">55 → 1.55×</span> · <span class="hl">60 → 1.60×</span> · <span class="hl">65 → 1.65×</span> · <span class="hl">70 → 1.70×</span> · <span class="hl">75 → 1.75×</span> · <span class="hl">80 → 1.80×</span> · <span class="hl">85 → 1.85×</span> · <span class="hl">90 → 1.90×</span> · <span class="hl">95 → 1.95×</span> · <span class="hl">100 → 2.00×</span><br><br>
+        Powyżej 100 pkt pasek wizualny nadal rośnie (do 200), ale mnożnik pozostaje zamrożony na <span class="hl">2.00×</span>. Mnożnik dotyczy całkowitego przychodu: kliknięcia + pasywny Room.
+      </div>
+    </div>
+  </div>
+
+  <!-- TODO -->
+  <div class="section">
+    <div class="section-label">// 07 — do ustalenia / todo</div>
+    <h2>Otwarte pytania</h2>
+    <ul class="todo-list">
+      <li>Animacja i narracja Rebirth — szczegółowy przebieg sekwencji "Wyleczenia" (efekty dźwiękowe, czas trwania, komunikat).</li>
+      <li>Historia i fabuła — choroba postaci jako punkt startowy serii. Czy kolejne Rebirth to kolejne postacie? Czy ta sama postać w nowej chorobie?</li>
+      <li>Przypadkowe zdarzenia w Kanale — żaba/szczur/inny intruz podkradający bakterie. Częstotliwość, mechanika odpędzania, nagroda.</li>
+      <li>Balans ekonomiczny — dokładne wartości kosztów ulepszeń Nosa i Pokoju, progi DNA, wzrost % szansy wirusów per level Wirulentności.</li>
+      <li>Ekwipunek — rodzaje i efekty poszczególnych wirusów (10 slotów przedmiotów). Definicja "itemów" z ekwipunku.</li>
+      <li>Górna granica zbiornika — czy w późnej grze (po wielu Rebirth) limit powinien rosnąć dynamicznie, czy pozostać otwarty na zawsze?</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+  <div class="footer">NOSE DRIPPER CLICKER · GDD v0.1 · CONFIDENTIAL · AI CONTEXT DOC</div>
+
+</div>
+</body>
+</html>

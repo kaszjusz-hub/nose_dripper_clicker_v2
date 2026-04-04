@@ -1,0 +1,17 @@
+name: nose_dripper_clicker
+environment:
+  sdk: ">=3.11.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.20.2
+  carousel_slider: ^5.1.2
+  http: ^1.6.0
+  shared_preferences: ^2.5.5
+  form_field_validator: ^1.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

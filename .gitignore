@@ -1,0 +1,61 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+*.bak
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Misc
+.flutter-plugins-dependencies
+.dart_tool/
+.packages
+pubspec.lock
+
+
+
+# Android/IJ
+android/
+android/app/src/main/java/io/flutter/plugins/
+android/launch/
+
+# macOS
+macos/
+
+
+# Plugins
+pubspec.lock
+
+# Windows
+build/
+windows/
+
+# Linux
+linux/
+
+# iOS
+ios/
+
+# Web
+web/
+
+# Build files
+*.apk
+*.aab
+*.ipa
+.ipados*
+*.so
+*.dll
+*.exe
+*.msi
+*.msix

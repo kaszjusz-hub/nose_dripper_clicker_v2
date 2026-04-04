@@ -11,7 +11,7 @@ class NoseScreen extends StatefulWidget {
 }
 
 class _NoseScreenState extends State<NoseScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final GameState gs = GameState.instance;
   late final TabController _tabController;
   VoidCallback? _tickListener;

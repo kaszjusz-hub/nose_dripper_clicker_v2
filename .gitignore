@@ -25,7 +25,7 @@ pubspec.lock
 
 
 # Android/IJ
-android/
+# android/ — required for CI builds
 android/app/src/main/java/io/flutter/plugins/
 android/launch/
 

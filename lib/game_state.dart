@@ -182,14 +182,21 @@ class GameState {
   static const int dnaPerRebirth = 10;
 
   // ── Nose upgrade definitions ─────────────────────────────────────────
+  // Game Design: First upgrade costs ~15 glutów (10% of base clickYield)
+  // so players can buy it after ~1 click, giving instant feedback.
+  // Scaling at 1.8^i keeps each level affordable while preserving
+  // exponential progression — Lv6 is ~283 glutów (reachable quickly).
+  // perClickBonus reduced from 50*i to 10*i to match — max +60/click
+  // on top of 100 base keeps nose upgrades a meaningful but not dominant
+  // source of income vs room upgrades (passive drip).
   static final List<NoseUpgrade> noseUpgrades = [
     for (int i = 1; i <= 6; i++)
       NoseUpgrade(
         level: i,
         name: 'Nose Lv.$i',
         icon: i <= 3 ? '👃' : '🧬👃',
-        baseCost: (100 * (i <= 3 ? pow(2.5, i - 1) : pow(3.0, i - 1))).round(),
-        perClickBonus: 50.0 * i,
+        baseCost: (15 * pow(1.8, i - 1)).round(),
+        perClickBonus: 10.0 * i,
       ),
   ];
 

@@ -44,8 +44,10 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
-    // Load game state on startup
-    GameState().loadGame();
+    // Load game state (non-blocking, setState after load)
+    GameState().loadGame().then((loaded) {
+      if (mounted && loaded) setState(() {});
+    });
     // Start periodic save every 30 seconds
     _saveTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       GameState().saveGame();

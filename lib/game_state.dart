@@ -272,13 +272,11 @@ class GameState {
     return 3 + unlocked;
   }
 
-  /// Glut yield per click (base × nose levels)
+  /// Glut yield per click (base × nose levels × threshold multipliers)
   double get clickYield {
     double yield = clickYieldBase;
     for (int lvl = 1; lvl <= availableNoseLevels; lvl++) {
-      final count = noseLevels[lvl] ?? 0;
-      final def = _getNoseDef(lvl);
-      yield += def.perClickBonus * count;
+      yield += getEffectiveNoseBonus(lvl);
     }
     return yield;
   }
@@ -306,6 +304,52 @@ class GameState {
     final def = roomUpgrades[level - 1];
     final count = roomLevels[level] ?? 0;
     return (def.baseCost * pow(1.8, count)).round();
+  }
+
+  // ─── Threshold / Milestone System ────────────────────────────────────
+  /// Threshold milestones that double the bonus of an upgrade.
+  /// 10, 25, 50, 100, 200, 300, 400... (every 100 from 100)
+  List<int> getThresholdMilestones() {
+    final milestones = <int>[10, 25, 50];
+    int t = 100;
+    while (milestones.length < 20) {
+      milestones.add(t);
+      t += 100;
+    }
+    return milestones;
+  }
+
+  /// How many milestones have been crossed for a given nose upgrade level.
+  int getThresholdCount(int level) {
+    final count = noseLevels[level] ?? 0;
+    final milestones = getThresholdMilestones();
+    return milestones.where((m) => count >= m).length;
+  }
+
+  /// The effective bonus multiplier for a nose upgrade (2^thresholdCount).
+  int getThresholdMultiplier(int level) {
+    final count = getThresholdCount(level);
+    return pow(2, count).toInt();
+  }
+
+  /// Next milestone threshold for a given nose upgrade level,
+  /// or -1 if no more milestones.
+  int getNextThreshold(int level) {
+    final count = noseLevels[level] ?? 0;
+    final milestones = getThresholdMilestones();
+    for (final m in milestones) {
+      if (count < m) return m;
+    }
+    return -1;
+  }
+
+  /// Effective per-click bonus for a nose upgrade level, including thresholds.
+  double getEffectiveNoseBonus(int level) {
+    final count = noseLevels[level] ?? 0;
+    if (count == 0) return 0.0;
+    final def = _getNoseDef(level);
+    final threshMult = getThresholdMultiplier(level);
+    return def.perClickBonus * count * threshMult;
   }
 
   /// DNA multiplier from unspent DNA (+10% per point)

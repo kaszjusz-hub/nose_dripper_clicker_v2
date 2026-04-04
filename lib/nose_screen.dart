@@ -327,6 +327,81 @@ class _NoseScreenState extends State<NoseScreen>
   }
 
   // Upgrade panel (Nose & Room tabs)
+  Widget _buildThresholdBar() {
+    // Find the most advanced nose upgrade (highest level with purchases)
+    int bestLevel = 1;
+    int bestCount = 0;
+    for (int lvl = 1; lvl <= gs.availableNoseLevels; lvl++) {
+      final count = gs.noseLevels[lvl] ?? 0;
+      if (count > bestCount) {
+        bestCount = count;
+        bestLevel = lvl;
+      }
+    }
+
+    final nextThreshold = gs.getNextThreshold(bestLevel);
+    final currentMult = gs.getThresholdMultiplier(bestLevel);
+    final milestones = gs.getThresholdMilestones();
+
+    // Calculate progress to first milestone
+    int prevThreshold = 0;
+    double progress = 0.0;
+    String label = '';
+
+    if (nextThreshold == -1 && milestones.isNotEmpty) {
+      // All milestones crossed
+      progress = 1.0;
+      label = '×${currentMult} MAX';
+    } else if (nextThreshold > 0) {
+      final mIdx = milestones.indexOf(nextThreshold);
+      if (bestCount == 0) {
+        prevThreshold = 0;
+        progress = bestCount / (nextThreshold - prevThreshold).toDouble();
+      } else {
+        prevThreshold = mIdx > 0 ? milestones[mIdx - 1] : 0;
+        progress = (bestCount - prevThreshold).toDouble() /
+            (nextThreshold - prevThreshold).toDouble();
+      }
+      progress = progress.clamp(0.0, 1.0);
+      label = '$bestCount/$nextThreshold → ×${currentMult * 2}';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('PROGI ×2',
+                  style: const TextStyle(
+                      color: Color(0xFFcdd9b5),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      letterSpacing: 1)),
+              Text(label,
+                  style: const TextStyle(
+                      color: Color(0xFFa8ff5a),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10)),
+            ],
+          ),
+          const SizedBox(height: 3),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: const Color(0xFF1a1f13),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFd4af37)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildUpgradePanel() {
     return Container(
       decoration: BoxDecoration(
@@ -336,6 +411,8 @@ class _NoseScreenState extends State<NoseScreen>
       ),
       child: Column(
         children: [
+          // Threshold milestone bar
+          _buildThresholdBar(),
           // Tab bar
           Container(
             decoration: BoxDecoration(

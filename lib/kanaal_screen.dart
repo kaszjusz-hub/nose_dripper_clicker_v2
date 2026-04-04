@@ -47,33 +47,59 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // Canal is always visually full — waves are cosmetic
     return Scaffold(
       backgroundColor: const Color(0xFF0d0f0a),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([_waveController, _bubbleController]),
-              builder: (ctx, child) {
-                return CustomPaint(
-                  painter: _SlimeWavePainter(
-                    waveT: _waveController.value,
-                    bubbleT: _bubbleController.value,
-                    bacteriaCount: gs.bacteriaInTank,
-                    intensity: gs.tankMl / gs.rebirthThreshold, // scales wave intensity
+      body: AnimatedBuilder(
+        animation: Listenable.merge([_waveController, _bubbleController]),
+        builder: (ctx, _) {
+          return Stack(
+            children: [
+              // Sewer background: walls, ladder, lamp
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _SewerBackgroundPainter(
+                    flickerT: _waveController.value,
+                    slimeFillRatio: (gs.tankMl / 3000000.0).clamp(0.0, 1.0),
                   ),
                   size: Size.infinite,
-                );
-              },
-            ),
-          ),
-          _buildHUD(),
-          ..._buildBacteria(),
-          if (gs.rebirthAvailable) _buildRebirthButton(),
-          if (gs.dnaShopUnlocked) _buildDnaShopButton(),
-          if (gs.inventory.isNotEmpty) _buildInventoryButton(),
-        ],
+                ),
+              ),
+              // Slime layer at the bottom
+              _buildSlimeLayer(),
+              _buildHUD(),
+              ..._buildBacteria(),
+              if (gs.rebirthAvailable) _buildRebirthButton(),
+              if (gs.dnaShopUnlocked) _buildDnaShopButton(),
+              if (gs.inventory.isNotEmpty) _buildInventoryButton(),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSlimeLayer() {
+    final fillRatio = (gs.tankMl / 3000000.0).clamp(0.0, 1.0);
+    if (fillRatio < 0.01) return const SizedBox.shrink();
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.5 * fillRatio,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([_waveController, _bubbleController]),
+          builder: (ctx, _) {
+            return CustomPaint(
+              painter: _SlimeWavePainter(
+                waveT: _waveController.value,
+                bubbleT: _bubbleController.value,
+                bacteriaCount: gs.bacteriaInTank,
+                intensity: fillRatio,
+              ),
+              size: Size.infinite,
+            );
+          },
+        ),
       ),
     );
   }
@@ -551,6 +577,103 @@ class _DevCheatsPanelState extends State<_DevCheatsPanel> {
         ],
       ),
     );
+  }
+}
+
+class _SewerBackgroundPainter extends CustomPainter {
+  final double flickerT;
+  final double slimeFillRatio;
+  _SewerBackgroundPainter({required this.flickerT, required this.slimeFillRatio});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Dark concrete/mortar background
+    final bgPaint = Paint()
+      ..color = const Color(0xFF2a2520)
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
+
+    // Brick pattern
+    final brickPaint = Paint()
+      ..color = const Color(0xFF3d2b1f)
+      ..style = PaintingStyle.fill;
+    final mortarPaint = Paint()
+      ..color = const Color(0xFF1a1410)
+      ..style = PaintingStyle.fill;
+    final brickH = 14.0;
+    final brickW = 28.0;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), mortarPaint);
+    final rows = (size.height / brickH).ceil();
+    for (int row = 0; row < rows; row++) {
+      final cols = (size.width / brickW).ceil() + 1;
+      for (int col = 0; col < cols; col++) {
+        bool isOddRow = row % 2 == 1;
+        double ox = col * brickW + (isOddRow ? brickW / 2 : 0);
+        if (ox < size.width) {
+          canvas.drawRect(
+            Rect.fromLTWH(ox + 1, row * brickH + 1, brickW - 2, brickH - 2),
+            brickPaint,
+          );
+        }
+      }
+    }
+
+    // Dirt/patina stains
+    final stainPaint = Paint()
+      ..color = const Color(0xFF1a1410).withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(Rect.fromLTWH(size.width * 0.1, size.height * 0.1, 40, 80), stainPaint);
+    canvas.drawOval(Rect.fromLTWH(size.width * 0.7, size.height * 0.2, 50, 60), stainPaint);
+    canvas.drawRect(Rect.fromLTWH(size.width * 0.4, size.height * 0.15, 30, 100), stainPaint);
+
+    // Metal ladder (left side)
+    final railPaint = Paint()
+      ..color = const Color(0xFF555555)
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+    final x1 = size.width * 0.08;
+    final x2 = size.width * 0.16;
+    canvas.drawLine(Offset(x1, 0), Offset(x1, size.height), railPaint);
+    canvas.drawLine(Offset(x2, 0), Offset(x2, size.height), railPaint);
+    // Rungs
+    final rungPaint = Paint()
+      ..color = const Color(0xFF555555)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    for (double y = 40; y < size.height; y += 40) {
+      canvas.drawLine(Offset(x1, y), Offset(x2, y), rungPaint);
+    }
+
+    // Flickering lamp (right top)
+    final lampX = size.width * 0.85;
+    final lampY = size.height * 0.08;
+    final flicker = 0.7 + 0.3 * sin(flickerT * pi * 2.0 * 3.0);
+    // Lamp housing
+    canvas.drawCircle(Offset(lampX, lampY), 8, Paint()..color = const Color(0xFF333333)..style = PaintingStyle.fill);
+    // Wire
+    canvas.drawLine(Offset(lampX, 0), Offset(lampX, lampY - 8), Paint()..color = const Color(0xFF333333)..strokeWidth = 2);
+    // Light glow
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.center,
+        radius: 0.5,
+        colors: [
+          Color.fromARGB((flicker * 100).toInt(), 255, 200, 80),
+          Color.fromARGB((flicker * 40).toInt(), 255, 200, 80),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(lampX, lampY), radius: size.width * 0.4));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
+    // Lamp glow circle
+    final lampGlow = Paint()
+      ..color = Color.fromARGB((flicker * 200).toInt(), 255, 220, 80)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawCircle(Offset(lampX, lampY), 12, lampGlow);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SewerBackgroundPainter oldDelegate) {
+    return oldDelegate.flickerT != flickerT;
   }
 }
 

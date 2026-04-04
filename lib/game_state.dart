@@ -281,13 +281,11 @@ class GameState {
     return yield;
   }
 
-  /// Passive glut drip per second (room upgrades)
+  /// Passive glut drip per second (room upgrades × threshold multipliers)
   double get passiveDrip {
     double drip = 0.0;
     for (int lvl = 1; lvl <= availableRoomLevels; lvl++) {
-      final count = roomLevels[lvl] ?? 0;
-      final def = roomUpgrades[lvl - 1]; // 0-indexed list
-      drip += def.dripPerSec * count;
+      drip += getEffectiveRoomBonus(lvl);
     }
     return drip;
   }
@@ -350,6 +348,15 @@ class GameState {
     final def = _getNoseDef(level);
     final threshMult = getThresholdMultiplier(level);
     return def.perClickBonus * count * threshMult;
+  }
+
+  /// Effective drip/sec bonus for a room upgrade level, including thresholds.
+  double getEffectiveRoomBonus(int level) {
+    final count = roomLevels[level] ?? 0;
+    if (count == 0) return 0.0;
+    final def = roomUpgrades[level - 1];
+    final threshMult = getThresholdMultiplier(level);
+    return def.dripPerSec * count * threshMult;
   }
 
   /// DNA multiplier from unspent DNA (+10% per point)

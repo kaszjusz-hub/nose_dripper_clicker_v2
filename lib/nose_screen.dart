@@ -326,16 +326,20 @@ class _NoseScreenState extends State<NoseScreen>
     }).toList();
   }
 
-  // Upgrade panel (Nose & Room tabs)
-  Widget _buildThresholdBar() {
-    // Find the most advanced nose upgrade (highest level with purchases)
+  // Threshold milestone bar — works for nose OR room
+  Widget _buildThresholdBar({required bool isNose}) {
+    // Find the most advanced upgrade (highest count)
     int bestLevel = 1;
     int bestCount = 0;
-    for (int lvl = 1; lvl <= gs.availableNoseLevels; lvl++) {
-      final count = gs.noseLevels[lvl] ?? 0;
-      if (count > bestCount) {
-        bestCount = count;
-        bestLevel = lvl;
+    int maxLevels = isNose ? gs.availableNoseLevels : gs.availableRoomLevels;
+
+    for (int lvl = 1; lvl <= maxLevels; lvl++) {
+      if (isNose) {
+        final count = gs.noseLevels[lvl] ?? 0;
+        if (count > bestCount) { bestCount = count; bestLevel = lvl; }
+      } else {
+        final count = gs.roomLevels[lvl] ?? 0;
+        if (count > bestCount) { bestCount = count; bestLevel = lvl; }
       }
     }
 
@@ -343,27 +347,24 @@ class _NoseScreenState extends State<NoseScreen>
     final currentMult = gs.getThresholdMultiplier(bestLevel);
     final milestones = gs.getThresholdMilestones();
 
-    // Calculate progress to first milestone
     int prevThreshold = 0;
     double progress = 0.0;
     String label = '';
 
-    if (nextThreshold == -1 && milestones.isNotEmpty) {
-      // All milestones crossed
+    if (bestCount == 0) {
+      // Not started yet — show first milestone
+      progress = 0.0;
+      label = 'Kup pierwszy ulepszenie!';
+    } else if (nextThreshold == -1 && milestones.isNotEmpty) {
       progress = 1.0;
-      label = '×${currentMult} MAX';
+      label = '×$currentMult — MAX!';
     } else if (nextThreshold > 0) {
       final mIdx = milestones.indexOf(nextThreshold);
-      if (bestCount == 0) {
-        prevThreshold = 0;
-        progress = bestCount / (nextThreshold - prevThreshold).toDouble();
-      } else {
-        prevThreshold = mIdx > 0 ? milestones[mIdx - 1] : 0;
-        progress = (bestCount - prevThreshold).toDouble() /
-            (nextThreshold - prevThreshold).toDouble();
-      }
+      prevThreshold = mIdx > 0 ? milestones[mIdx - 1] : 0;
+      progress = (bestCount - prevThreshold).toDouble() /
+          (nextThreshold - prevThreshold).toDouble();
       progress = progress.clamp(0.0, 1.0);
-      label = '$bestCount/$nextThreshold → ×${currentMult * 2}';
+      label = 'Lv.$bestLevel: $bestCount/$nextThreshold → ×${currentMult * 2}';
     }
 
     return Padding(
@@ -402,7 +403,9 @@ class _NoseScreenState extends State<NoseScreen>
     );
   }
 
+  // Upgrade panel (Nose & Room tabs)
   Widget _buildUpgradePanel() {
+    final isNoseTab = _tabController.index == 0;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF131710),
@@ -411,8 +414,13 @@ class _NoseScreenState extends State<NoseScreen>
       ),
       child: Column(
         children: [
-          // Threshold milestone bar
-          _buildThresholdBar(),
+          // Threshold milestone bar — adapts to current tab
+          AnimatedBuilder(
+            animation: _tabController,
+            builder: (_, __) => _buildThresholdBar(
+              isNose: _tabController.index == 0,
+            ),
+          ),
           // Tab bar
           Container(
             decoration: BoxDecoration(
@@ -462,11 +470,14 @@ class _NoseScreenState extends State<NoseScreen>
         final owned = gs.noseLevels[lvl] ?? 0;
         final cost = gs.noseCost(lvl);
         final canBuy = unlocked && gs.glutCount >= cost;
+        final effectiveBonus = gs.getEffectiveNoseBonus(lvl);
+        final threshMult = gs.getThresholdMultiplier(lvl);
+        final multLabel = threshMult > 1 ? ' [×$threshMult THRESH]' : '';
 
         return _upgradeCard(
           icon: upg.icon,
           name: upg.name,
-          subtitle: '+${upg.perClickBonus.toInt()} glut/klik',
+          subtitle: '+${effectiveBonus.toInt()} glut/klik${multLabel}',
           owned: owned.toString(),
           cost: cost.toStringAsFixed(0),
           canBuy: canBuy,
@@ -493,14 +504,18 @@ class _NoseScreenState extends State<NoseScreen>
         final owned = gs.roomLevels[lvl] ?? 0;
         final cost = gs.roomCost(lvl);
         final canBuy = unlocked && gs.glutCount >= cost;
-        final dripStr = upg.dripPerSec == upg.dripPerSec.toInt()
-            ? upg.dripPerSec.toInt().toString()
-            : upg.dripPerSec.toStringAsFixed(1);
+        final baseDrip = upg.dripPerSec;
+        final threshMult = gs.getThresholdMultiplier(lvl);
+        final effDrip = baseDrip * threshMult;
+        final dripStr = effDrip == effDrip.toInt()
+            ? effDrip.toInt().toString()
+            : effDrip.toStringAsFixed(1);
+        final threshLabel = threshMult > 1 ? ' [×$threshMult THRESH]' : '';
 
         return _upgradeCard(
           icon: upg.icon,
           name: upg.name,
-          subtitle: '+$dripStr ml/s pasywnie',
+          subtitle: '+$dripStr ml/s pasywnie$threshLabel',
           owned: owned.toString(),
           cost: cost.toStringAsFixed(0),
           canBuy: canBuy,

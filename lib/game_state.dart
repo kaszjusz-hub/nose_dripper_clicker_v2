@@ -415,6 +415,8 @@ class GameState {
   void clickBacteria() {
     if (bacteriaInTank <= 0) return;
     bacteriaInTank--;
+    // Reward: passive drip per second × 300
+    glutCount += (passiveDrip * 300).round();
     if (virusEvolutionUnlocked) {
       if (_random.nextDouble() < virusChance) {
         _spawnVirus();

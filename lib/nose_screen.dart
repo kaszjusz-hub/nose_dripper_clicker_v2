@@ -326,76 +326,58 @@ class _NoseScreenState extends State<NoseScreen>
     }).toList();
   }
 
-  // Threshold milestone bar — works for nose OR room
-  Widget _buildThresholdBar({required bool isNose}) {
-    // Find the most advanced upgrade (highest count)
-    int bestLevel = 1;
-    int bestCount = 0;
-    int maxLevels = isNose ? gs.availableNoseLevels : gs.availableRoomLevels;
-
-    for (int lvl = 1; lvl <= maxLevels; lvl++) {
-      if (isNose) {
-        final count = gs.noseLevels[lvl] ?? 0;
-        if (count > bestCount) { bestCount = count; bestLevel = lvl; }
-      } else {
-        final count = gs.roomLevels[lvl] ?? 0;
-        if (count > bestCount) { bestCount = count; bestLevel = lvl; }
-      }
-    }
-
-    final nextThreshold = gs.getNextThreshold(bestLevel);
-    final currentMult = gs.getThresholdMultiplier(bestLevel);
+  // Individual threshold progress row for a single upgrade level
+  Widget _buildThresholdRow(int level, bool isNose) {
+    final count = isNose ? (gs.noseLevels[level] ?? 0) : (gs.roomLevels[level] ?? 0);
     final milestones = gs.getThresholdMilestones();
+    final next = gs.getNextThreshold(level);
+    final mult = gs.getThresholdMultiplier(level);
 
-    int prevThreshold = 0;
-    double progress = 0.0;
-    String label = '';
-
-    if (bestCount == 0) {
-      // Not started yet — show first milestone
-      progress = 0.0;
-      label = 'Kup pierwszy ulepszenie!';
-    } else if (nextThreshold == -1 && milestones.isNotEmpty) {
-      progress = 1.0;
-      label = '×$currentMult — MAX!';
-    } else if (nextThreshold > 0) {
-      final mIdx = milestones.indexOf(nextThreshold);
-      prevThreshold = mIdx > 0 ? milestones[mIdx - 1] : 0;
-      progress = (bestCount - prevThreshold).toDouble() /
-          (nextThreshold - prevThreshold).toDouble();
-      progress = progress.clamp(0.0, 1.0);
-      label = 'Lv.$bestLevel: $bestCount/$nextThreshold → ×${currentMult * 2}';
+    if (next == -1) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text('MAX ×$mult',
+            style: const TextStyle(color: Color(0xFFd4af37), fontSize: 9)),
+      );
     }
 
+    if (count == 0) {
+      // Show "0/X → ×2" with empty progress
+      return _miniThresholdBar(0.0, milestones.isNotEmpty ? milestones[0] : 10, 0, 0);
+    }
+
+    // find previous milestone
+    final mIdx = milestones.indexOf(next);
+    final prev = mIdx > 0 ? milestones[mIdx - 1] : 0;
+    final progress = ((count - prev) / (next - prev)).clamp(0.0, 1.0);
+    return _miniThresholdBar(progress, next, mult, count);
+  }
+
+  // Mini threshold progress bar displayed beneath each upgrade card
+  Widget _miniThresholdBar(double progress, int nextThresh, int currentMult, int current) {
+    final displayCurrent = current;
+    final nextMult = currentMult * 2;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(top: 2, bottom: 4),
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('PROGI ×2',
-                  style: const TextStyle(
-                      color: Color(0xFFcdd9b5),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                      letterSpacing: 1)),
-              Text(label,
-                  style: const TextStyle(
-                      color: Color(0xFFa8ff5a),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10)),
-            ],
+          Expanded(
+            child: Text(displayCurrent == 0
+                ? '0/$nextThresh → ×$nextMult'
+                : '$displayCurrent/$nextThresh → ×$nextMult',
+                style: const TextStyle(color: Color(0xFF7a8a62), fontSize: 8)),
           ),
-          const SizedBox(height: 3),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: const Color(0xFF1a1f13),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFd4af37)),
+          const SizedBox(width: 4),
+          Expanded(
+            flex: 3,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor: const Color(0xFF1a1f13),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFd4af37)),
+              ),
             ),
           ),
         ],
@@ -413,13 +395,6 @@ class _NoseScreenState extends State<NoseScreen>
       ),
       child: Column(
         children: [
-          // Threshold milestone bar — adapts to current tab
-          AnimatedBuilder(
-            animation: _tabController,
-            builder: (_, __) => _buildThresholdBar(
-              isNose: _tabController.index == 0,
-            ),
-          ),
           // Tab bar
           Container(
             decoration: BoxDecoration(
@@ -473,18 +448,25 @@ class _NoseScreenState extends State<NoseScreen>
         final threshMult = gs.getThresholdMultiplier(lvl);
         final multLabel = threshMult > 1 ? ' [×$threshMult THRESH]' : '';
 
-        return _upgradeCard(
-          icon: upg.icon,
-          name: upg.name,
-          subtitle: '+${effectiveBonus.toInt()} glut/klik${multLabel}',
-          owned: owned.toString(),
-          cost: cost.toStringAsFixed(0),
-          canBuy: canBuy,
-          locked: !unlocked,
-          onBuy: () {
-            gs.buyNoseUpgrade(lvl);
-            setState(() {});
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _upgradeCard(
+              icon: upg.icon,
+              name: upg.name,
+              subtitle: '+${effectiveBonus.toInt()} glut/klik${multLabel}',
+              owned: owned.toString(),
+              cost: cost.toStringAsFixed(0),
+              canBuy: canBuy,
+              locked: !unlocked,
+              onBuy: () {
+                gs.buyNoseUpgrade(lvl);
+                setState(() {});
+              },
+            ),
+            if (unlocked) _buildThresholdRow(lvl, true),
+          ],
         );
       },
     );
@@ -511,18 +493,25 @@ class _NoseScreenState extends State<NoseScreen>
             : effDrip.toStringAsFixed(1);
         final threshLabel = threshMult > 1 ? ' [×$threshMult THRESH]' : '';
 
-        return _upgradeCard(
-          icon: upg.icon,
-          name: upg.name,
-          subtitle: '+$dripStr ml/s pasywnie$threshLabel',
-          owned: owned.toString(),
-          cost: cost.toStringAsFixed(0),
-          canBuy: canBuy,
-          locked: !unlocked,
-          onBuy: () {
-            gs.buyRoomUpgrade(lvl);
-            setState(() {});
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _upgradeCard(
+              icon: upg.icon,
+              name: upg.name,
+              subtitle: '+$dripStr ml/s pasywnie$threshLabel',
+              owned: owned.toString(),
+              cost: cost.toStringAsFixed(0),
+              canBuy: canBuy,
+              locked: !unlocked,
+              onBuy: () {
+                gs.buyRoomUpgrade(lvl);
+                setState(() {});
+              },
+            ),
+            if (unlocked) _buildThresholdRow(lvl, false),
+          ],
         );
       },
     );

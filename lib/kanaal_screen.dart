@@ -17,6 +17,10 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
   late final AnimationController _bubbleController;
   VoidCallback? _tickListener;
 
+  // Floating reward text after clicking bacteria
+  final List<_FloatingText> _floatingTexts = [];
+  int _floatingId = 0;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +34,9 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
     )..repeat();
     // Use shared game loop instead of local timer
     _tickListener = () {
+      // Clean up old floating texts
+      final now = DateTime.now().millisecondsSinceEpoch;
+      _floatingTexts.removeWhere((ft) => (now - ft.createdAt) > 1500);
       if (mounted) {
         setState(() {});
       }
@@ -39,10 +46,25 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
 
   @override
   void dispose() {
-    if (_tickListener != null) gs.removeTickListener(_tickListener!);
+    gs.removeTickListener(_tickListener!);
     _waveController.dispose();
     _bubbleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onBacteriaTap(Offset position) async {
+    final reward = (gs.passiveDrip * 300).round();
+    gs.clickBacteria();
+    setState(() {
+      _floatingTexts.add(_FloatingText(
+        id: _floatingId++,
+        text: '+${reward > 0 ? reward : '0'}',
+        x: position.dx,
+        y: position.dy,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ));
+    });
+    gs.saveGame();
   }
 
   @override
@@ -68,7 +90,8 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
               _buildSlimeLayer(),
               _buildHUD(),
               ..._buildBacteria(),
-              if (gs.rebirthAvailable) _buildRebirthButton(),
+              ..._buildFloatingTexts(),
+              if (gs.rebirthAvailable) _buildRebirthButton(),  
               if (gs.dnaShopUnlocked) _buildDnaShopButton(),
               if (gs.inventory.isNotEmpty) _buildInventoryButton(),
             ],
@@ -159,6 +182,14 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
                   : '${(progress * 100).toStringAsFixed(1)}% do pierwszego Rebirthu',
               style: const TextStyle(color: Color(0xFF7a8a62), fontSize: 12),
             ),
+            // Income/sec in top-right
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '🧪 +${gs.passiveDrip.toStringAsFixed(1)} ml/s',
+                style: const TextStyle(color: Color(0xFF7a8a62), fontSize: 12),
+              ),
+            ),
             if (gs.comboPoints > 5) ...[
               const SizedBox(height: 8),
               _buildComboBar(),
@@ -179,7 +210,7 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('COMBO ${displayPoints.toInt()}/200', 
+            Text('COMBO ${displayPoints.toInt()}/200',
               style: const TextStyle(fontSize: 10, color: Color(0xFF7a8a62), letterSpacing: 2)),
             Text(
               'x${gs.comboMultiplier.toStringAsFixed(2)}',
@@ -201,6 +232,38 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
     );
   }
 
+  List<Widget> _buildFloatingTexts() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    // Remove old texts
+    _floatingTexts.removeWhere((ft) => (now - ft.createdAt) > 1500);
+
+    return _floatingTexts.map((ft) {
+      final elapsed = (now - ft.createdAt) / 1500.0;
+      final dx = ft.x;
+      final dy = ft.y - elapsed * 100; // float up 100px
+      final opacity = (1.0 - elapsed).clamp(0.0, 1.0);
+
+      return Positioned(
+        left: dx - 30,
+        top: dy - 15,
+        child: IgnorePointer(
+          child: Opacity(
+            opacity: opacity,
+            child: Text(
+              ft.text,
+              style: const TextStyle(
+                color: Color(0xFFa8ff5a),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                shadows: [Shadow(color: Colors.black, blurRadius: 6)],
+              ),
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
   List<Widget> _buildBacteria() {
     if (!gs.bacteriaUnlocked || gs.bacteriaInTank <= 0) return [];
     final size = MediaQuery.of(context).size;
@@ -212,10 +275,7 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
         left: dx - 24,
         top: dy - 24,
         child: GestureDetector(
-          onTap: () {
-            gs.clickBacteria();
-            setState(() {});
-          },
+          onTap: () => _onBacteriaTap(Offset(dx, dy)),
           child: Container(
             width: 48,
             height: 48,
@@ -247,7 +307,7 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        child: Text('🧬 REBIRTH — Wyleczenie (${gs.dnaToEarn} DNA)',
+        child: Text('🧬 REBIRTH - Wyleczenie (${gs.dnaToEarn} DNA)',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
@@ -398,7 +458,7 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
             if (gs.inventory.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: Text('Pusto… Klikaj bakterie, zeby znalezc wirusy! 🦠')),
+                child: Center(child: Text('Pusto... Klikaj bakterie, zeby znalezc wirusy! 🦠')),
               )
             else ...[
               const SizedBox(height: 8),
@@ -677,6 +737,21 @@ class _SewerBackgroundPainter extends CustomPainter {
   }
 }
 
+class _FloatingText {
+  final int id;
+  final String text;
+  final double x;
+  final double y;
+  final int createdAt;
+  _FloatingText({
+    required this.id,
+    required this.text,
+    required this.x,
+    required this.y,
+    required this.createdAt,
+  });
+}
+
 class _SlimeWavePainter extends CustomPainter {
   final double waveT;
   final double bubbleT;
@@ -695,7 +770,7 @@ class _SlimeWavePainter extends CustomPainter {
     final waveHeight = 8.0 + (intensity.clamp(1.0, 5.0) * 3.0);
     final numWaves = 3 + (intensity.clamp(1.0, 5.0)).toInt();
 
-    // Background gradient — full canal
+    // Background gradient - full canal
     final gradPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,

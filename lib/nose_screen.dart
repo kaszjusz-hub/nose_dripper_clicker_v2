@@ -405,7 +405,6 @@ class _NoseScreenState extends State<NoseScreen>
 
   // Upgrade panel (Nose & Room tabs)
   Widget _buildUpgradePanel() {
-    final isNoseTab = _tabController.index == 0;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF131710),

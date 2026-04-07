@@ -4,7 +4,6 @@ import 'game_state.dart';
 import 'nose_screen.dart';
 import 'kanaal_screen.dart';
 
-
 void main() {
   runApp(const NoseDripperClicker());
 }
@@ -67,6 +66,7 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
+        scrollDirection: Axis.vertical,
         controller: _pageController,
         physics: const ClampingScrollPhysics(),
         onPageChanged: (index) {

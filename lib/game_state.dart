@@ -174,7 +174,7 @@ class GameState {
   }
 
   // ── Constants ────────────────────────────────────────────────────────
-  static const double clickYieldBase = 100.0;
+  static const double clickYieldBase = 5.0; // per click, before upgrades
   static const double passiveDripBase = 1.0;
   static const int maxBacteria = 5;
   static const double comboDecayPerSec = 3.0;
@@ -456,7 +456,7 @@ class GameState {
     dnaUpgradeLevels[upgradeId] = currentLevel + 1;
     // Apply unlocks
     if (upgradeId == 'virus_evolution') virusEvolutionUnlocked = true;
-    if (upgradeId == 'virus_slots') maxVirusSlots = 1 + (currentLevel + 1);
+    if (upgradeId == 'virus_slots') maxVirusSlots = min(5, 1 + currentLevel);
     return true;
   }
 

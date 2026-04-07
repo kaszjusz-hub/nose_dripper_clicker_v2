@@ -191,44 +191,15 @@ class _KanaalScreenState extends State<KanaalScreen> with TickerProviderStateMix
               ),
             ),
             if (gs.comboPoints > 5) ...[
-              const SizedBox(height: 8),
-              _buildComboBar(),
+              const SizedBox(height: 4),
+              Text(
+                "🔥 Combo: ${gs.comboPoints.toInt()} (×${gs.comboMultiplier.toStringAsFixed(2)})",
+                style: const TextStyle(color: Color(0xFFa8ff5a), fontSize: 14, fontWeight: FontWeight.bold),
+              ),
             ],
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildComboBar() {
-    final comboCap = 200.0;
-    final ratio = (gs.comboPoints.clamp(0.0, comboCap) / comboCap).clamp(0.0, 1.0);
-    final displayPoints = gs.comboPoints.clamp(0.0, comboCap);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('COMBO ${displayPoints.toInt()}/200',
-              style: const TextStyle(fontSize: 10, color: Color(0xFF7a8a62), letterSpacing: 2)),
-            Text(
-              'x${gs.comboMultiplier.toStringAsFixed(2)}',
-              style: const TextStyle(fontSize: 12, color: Color(0xFFa8ff5a), fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 3),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: ratio,
-            minHeight: 4,
-            backgroundColor: Colors.black54,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFa8ff5a)),
-          ),
-        ),
-      ],
     );
   }
 

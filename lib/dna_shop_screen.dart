@@ -1,115 +1,111 @@
 import 'package:flutter/material.dart';
 import 'game_state.dart';
-import 'dna_upgrade.dart';
 
 class DNAShopScreen extends StatefulWidget {
-  const DNAShopScreen({Key? key}) : super(key: key);
+  const DNAShopScreen({super.key});
 
   @override
   State<DNAShopScreen> createState() => _DNAShopScreenState();
 }
 
 class _DNAShopScreenState extends State<DNAShopScreen> {
-  final GameState gameState = GameState.instance;
-
-  // DNA upgrades list
-  late List<DNAUpgrade> effectUpgrades;
-
-  @override
-  void initState() {
-    super.initState();
-    effectUpgrades = [
-      DNAUpgrade(
-        title: 'Szybciej',
-        description: 'Zwiększ szybkość kliknięcia',
-        baseCost: 10,
-        effect: () {
-          setState(() {});
-        },
-      ),
-      DNAUpgrade(
-        title: 'Więcej glutu',
-        description: 'Zwiększ ilość glutu na kliknięcie',
-        baseCost: 20,
-        effect: () {
-          setState(() {});
-        },
-      ),
-    ];
-  }
-
-  bool _canBuy(DNAUpgrade upgrade) =>
-      gameState.dnaPoints >= upgrade.baseCost && upgrade.level < 10;
+  final GameState gs = GameState.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sklep DNA'),
+        title: const Text('🧬 Sklep DNA'),
+        backgroundColor: const Color(0xFF161c10),
       ),
+      backgroundColor: const Color(0xFF0d0f0a),
       body: ListView.builder(
-        itemCount: effectUpgrades.length,
+        padding: const EdgeInsets.all(16),
+        itemCount: GameState.dnaUpgrades.length,
         itemBuilder: (context, index) {
-          final upgrade = effectUpgrades[index];
-          final canBuy = _canBuy(upgrade);
-          final cost = upgrade.currentCost(upgrade.level);
+          final def = GameState.dnaUpgrades[index];
+          final currentLevel = gs.dnaUpgradeLevels[def.id] ?? 0;
+          final isMaxed = currentLevel >= def.maxLevel;
+          final canBuy = !isMaxed && gs.unspentDna >= def.baseCostDna;
 
           return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: const EdgeInsets.only(bottom: 12),
+            color: const Color(0xFF161c10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: isMaxed ? const Color(0xFF2d3d1e) : const Color(0xFF3d5d2e),
+                width: isMaxed ? 1 : 2,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    upgrade.title,
-                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    upgrade.description,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Row(
+                    children: [
+                      Text(def.icon, style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              def.title,
+                              style: const TextStyle(
+                                color: Color(0xFFcdd9b5),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              def.description,
+                              style: const TextStyle(
+                                color: Color(0xFF7a8a62),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Poziom: ${upgrade.level}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        'Poziom: $currentLevel/${def.maxLevel}',
+                        style: const TextStyle(color: Color(0xFF7a8a62), fontSize: 13),
                       ),
-                      Text(
-                        'Koszt: $cost DNA',
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
+                      if (isMaxed)
+                        const Text(
+                          '✅ MAX',
+                          style: TextStyle(color: Color(0xFFa8ff5a), fontSize: 14, fontWeight: FontWeight.bold),
+                        )
+                      else
+                        ElevatedButton(
+                          onPressed: canBuy
+                              ? () {
+                                  gs.buyDnaUpgrade(def.id);
+                                  setState(() {});
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Zakupiono: ${def.title} (Lv.$currentLevel)'),
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: canBuy ? const Color(0xFF3d8d3d) : const Color(0xFF2a2a2a),
+                          ),
+                          child: Text(
+                            canBuy ? 'Kup (🧬 ${def.baseCostDna})' : 'Brak (🧬 ${def.baseCostDna})',
+                          ),
                         ),
-                      ),
                     ],
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: canBuy
-                        ? () {
-                            gameState.dnaPoints =
-                                (gameState.dnaPoints - cost).toInt();
-                            upgrade.level++;
-                            upgrade.effect();
-                            setState(() {});
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Zakupiono: ${upgrade.title}'),
-                              ),
-                            );
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: canBuy ? Colors.green : Colors.grey,
-                    ),
-                    child: const Text('Kup'),
                   ),
                 ],
               ),

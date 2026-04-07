@@ -174,7 +174,7 @@ class GameState {
   }
 
   // ── Constants ────────────────────────────────────────────────────────
-  static const double clickYieldBase = 5.0; // per click, before upgrades
+  static const double clickYieldBase = 1.0; // per click, before upgrades
   static const double passiveDripBase = 1.0;
   static const int maxBacteria = 5;
   static const double comboDecayPerSec = 3.0;
@@ -191,24 +191,22 @@ class GameState {
   // on top of 100 base keeps nose upgrades a meaningful but not dominant
   // source of income vs room upgrades (passive drip).
   static final List<NoseUpgrade> noseUpgrades = [
-    for (int i = 1; i <= 6; i++)
-      NoseUpgrade(
-        level: i,
-        name: 'Nose Lv.$i',
-        icon: i <= 3 ? '👃' : '🧬👃',
-        baseCost: (15 * pow(1.8, i - 1)).round(),
-        perClickBonus: 10.0 * i,
-      ),
+    NoseUpgrade(level: 1, name: 'Nose Lv.1', icon: '👃', baseCost: 1, perClickBonus: 1.0),
+    NoseUpgrade(level: 2, name: 'Nose Lv.2', icon: '👃', baseCost: 3, perClickBonus: 2.0),
+    NoseUpgrade(level: 3, name: 'Nose Lv.3', icon: '👃', baseCost: 8, perClickBonus: 3.0),
+    NoseUpgrade(level: 4, name: 'Nose Lv.4', icon: '🧬👃', baseCost: 15, perClickBonus: 4.0),
+    NoseUpgrade(level: 5, name: 'Nose Lv.5', icon: '🧬👃', baseCost: 28, perClickBonus: 5.0),
+    NoseUpgrade(level: 6, name: 'Nose Lv.6', icon: '🧬👃', baseCost: 45, perClickBonus: 6.0),
   ];
 
   // ── Room upgrade definitions ─────────────────────────────────────────
   static final List<RoomUpgrade> roomUpgrades = [
-    RoomUpgrade(level: 1, name: 'Fan', icon: '🌀', baseCost: 50, dripPerSec: 1.0),
-    RoomUpgrade(level: 2, name: 'Humidifier', icon: '💨', baseCost: 500, dripPerSec: 5.0),
-    RoomUpgrade(level: 3, name: 'Couch', icon: '🛋️', baseCost: 2500, dripPerSec: 15.0),
-    RoomUpgrade(level: 4, name: 'TV Stand', icon: '📺', baseCost: 10000, dripPerSec: 40.0),
-    RoomUpgrade(level: 5, name: 'Bookshelf', icon: '📚', baseCost: 50000, dripPerSec: 100.0),
-    RoomUpgrade(level: 6, name: 'Wardrobe', icon: '🪞', baseCost: 200000, dripPerSec: 250.0),
+    RoomUpgrade(level: 1, name: 'Fan', icon: '🌀', baseCost: 5, dripPerSec: 0.2),
+    RoomUpgrade(level: 2, name: 'Humidifier', icon: '💨', baseCost: 16, dripPerSec: 0.6),
+    RoomUpgrade(level: 3, name: 'Couch', icon: '🛋️', baseCost: 51, dripPerSec: 1.5),
+    RoomUpgrade(level: 4, name: 'TV Stand', icon: '📺', baseCost: 164, dripPerSec: 4.0),
+    RoomUpgrade(level: 5, name: 'Bookshelf', icon: '📚', baseCost: 525, dripPerSec: 10.0),
+    RoomUpgrade(level: 6, name: 'Wardrobe', icon: '🪞', baseCost: 1680, dripPerSec: 30.0),
   ];
 
   // ── DNA upgrade definitions ────────────────────────────────────────────

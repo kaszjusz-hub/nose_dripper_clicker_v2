@@ -13,7 +13,6 @@ class NoseScreen extends StatefulWidget {
 class _NoseScreenState extends State<NoseScreen>
     with TickerProviderStateMixin {
   final GameState gs = GameState.instance;
-  late final TabController _tabController;
   VoidCallback? _tickListener;
   late final AnimationController _charController;
   late final AnimationController _waveController;
@@ -24,7 +23,6 @@ class _NoseScreenState extends State<NoseScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _tickListener = () {
       if (mounted) setState(() {});
     };
@@ -47,7 +45,6 @@ class _NoseScreenState extends State<NoseScreen>
   @override
   void dispose() {
     if (_tickListener != null) gs.removeTickListener(_tickListener!);
-    _tabController.dispose();
     _charController.dispose();
     _waveController.dispose();
     _bubbleController.dispose();
@@ -159,13 +156,6 @@ class _NoseScreenState extends State<NoseScreen>
                   _resourceChip('🧻', '${gs.tissues} chust.'),
                 ],
               ),
-              Text('🟢 +${gs.passiveDrip.toStringAsFixed(1)} ml/s',
-                style: const TextStyle(
-                  color: Color(0xFFa8ff5a),
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               if (kDebugMode)
                 IconButton(
                   icon: const Icon(Icons.build, size: 20),
@@ -174,9 +164,29 @@ class _NoseScreenState extends State<NoseScreen>
                 ),
             ],
           ),
-          if (gs.comboPoints > 0) ...[
-            const SizedBox(height: 6),
-            _buildComboBar(),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (gs.comboPoints > 5)
+                Text('🔥 ×${gs.comboMultiplier.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Color(0xFFa8ff5a),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              if (gs.passiveDrip > 0)
+                Text('🟢 +${gs.passiveDrip.toStringAsFixed(1)} ml/s',
+                  style: const TextStyle(
+                    color: Color(0xFFa8ff5a),
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+            ],
+          ),
+          if (gs.comboPoints > 5) ...[
           ],
         ],
       ),
@@ -204,49 +214,7 @@ class _NoseScreenState extends State<NoseScreen>
     );
   }
 
-  Widget _buildComboBar() {
-    final comboCap = 200.0;
-    final ratio = (gs.comboPoints.clamp(0.0, comboCap) / comboCap).clamp(0.0, 1.0);
-    final displayPoints = gs.comboPoints.clamp(0.0, comboCap);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161c10),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF2d3d1e)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('COMBO ${displayPoints.toInt()}/200',
-                  style: const TextStyle(
-                      fontSize: 10,
-                      color: Color(0xFF7a8a62),
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.bold)),
-              Text('×${gs.comboMultiplier.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFFa8ff5a),
-                      fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: ratio,
-              minHeight: 5,
-              backgroundColor: Colors.black54,
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFa8ff5a)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildCanalVisualization(GameState gs) {
     final height = 60.0;
@@ -397,7 +365,7 @@ class _NoseScreenState extends State<NoseScreen>
     );
   }
 
-  // Upgrade panel (Nose & Room tabs)
+  // Upgrade panel (Nose & Room collapsible drawers)
   Widget _buildUpgradePanel() {
     return Container(
       decoration: BoxDecoration(
@@ -407,36 +375,33 @@ class _NoseScreenState extends State<NoseScreen>
       ),
       child: Column(
         children: [
-          // Tab bar
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: const Color(0xFF2d3d1e), width: 1),
+          // Nose expansion tile
+          ExpansionTile(
+            title: const Text('👃 NOSE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            initiallyExpanded: true,
+            onExpansionChanged: (exp) {},
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+                ),
+                child: _buildNoseTab(),
               ),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: const Color(0xFF7ec850),
-              indicatorWeight: 3,
-              labelColor: const Color(0xFF7ec850),
-              unselectedLabelColor: const Color(0xFF7a8a62),
-              labelStyle: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1),
-              tabs: const [
-                Tab(text: '👃 NOSE', height: 40),
-                Tab(text: '🛋️ ROOM', height: 40),
-              ],
-            ),
+            ],
           ),
-          // Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildNoseTab(),
-                _buildRoomTab(),
-              ],
-            ),
+          // Room expansion tile
+          ExpansionTile(
+            title: const Text('🛋️ ROOM', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            initiallyExpanded: false,
+            onExpansionChanged: (exp) {},
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+                ),
+                child: _buildRoomTab(),
+              ),
+            ],
           ),
         ],
       ),
@@ -856,3 +821,4 @@ class _DevCheatsPanelState extends State<_DevCheatsPanel> {
     );
   }
 }
+

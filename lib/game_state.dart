@@ -178,6 +178,7 @@ class GameState {
   static const double passiveDripBase = 1.0;
   static const int maxBacteria = 5;
   static const double comboDecayPerSec = 3.0;
+  static const double maxComboPoints = 200.0; // combo bar cap
   static const double baseVirusChance = 0.02; // 2%
   static const int dnaPerRebirth = 10;
 
@@ -341,25 +342,25 @@ class GameState {
     return -1;
   }
 
-  /// Effective per-click bonus for a nose upgrade level, including thresholds.
+  /// Effective per-click bonus for a nose upgrade level, including thresholds AND DNA multiplier.
   double getEffectiveNoseBonus(int level) {
     final count = noseLevels[level] ?? 0;
     if (count == 0) return 0.0;
     final def = _getNoseDef(level);
     final threshMult = getThresholdMultiplier(level);
-    return def.perClickBonus * count * threshMult;
+    return def.perClickBonus * count * threshMult * dnaMultiplier;
   }
 
-  /// Effective drip/sec bonus for a room upgrade level, including thresholds.
+  /// Effective drip/sec bonus for a room upgrade level, including thresholds AND DNA multiplier.
   double getEffectiveRoomBonus(int level) {
     final count = roomLevels[level] ?? 0;
     if (count == 0) return 0.0;
     final def = roomUpgrades[level - 1];
     final threshMult = getThresholdMultiplier(level);
-    return def.dripPerSec * count * threshMult;
+    return def.dripPerSec * count * threshMult * dnaMultiplier;
   }
 
-  /// DNA multiplier from unspent DNA (+10% per point)
+  /// DNA multiplier from unspent DNA (+10% per point). Affects click, passive, AND upgrade bonuses.
   double get dnaMultiplier => 1.0 + (unspentDna * 0.10);
 
   /// Combo multiplier: 1.00 → 2.00 (each 5 combo = +0.05x, cap at 100)
@@ -407,7 +408,7 @@ class GameState {
     final gained = clickYield * totalMultiplier;
     tankMl += gained;
     glutCount += gained.round();
-    comboPoints++;
+    comboPoints = min(comboPoints + 1, maxComboPoints);
     _maybeSpawnBacteria();
   }
 
@@ -493,7 +494,7 @@ class GameState {
       glutCount += gained.round();
     }
     // Combo decay
-    comboPoints = max(0.0, comboPoints - (comboDecayPerSec * dt));
+    comboPoints = max(0.0, comboPoints - (comboDecayPerSec * dt)).clamp(0, maxComboPoints);
     // Auto bacteria spawn (timer-based, not click-based)
     _checkAutoBacteriaSpawn();
   }

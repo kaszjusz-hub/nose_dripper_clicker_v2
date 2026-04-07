@@ -151,9 +151,21 @@ class _NoseScreenState extends State<NoseScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _resourceChip('🟢', '${gs.glutCount}'),
-              _resourceChip('🧬', '${gs.unspentDna} DNA'),
-              _resourceChip('🧻', '${gs.tissues} chust.'),
+              Row(
+                spacing: 6,
+                children: [
+                  _resourceChip('🟢', '${gs.glutCount}'),
+                  _resourceChip('🧬', '${gs.unspentDna} DNA'),
+                  _resourceChip('🧻', '${gs.tissues} chust.'),
+                ],
+              ),
+              Text('🟢 +${gs.passiveDrip.toStringAsFixed(1)} ml/s',
+                style: const TextStyle(
+                  color: Color(0xFFa8ff5a),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               if (kDebugMode)
                 IconButton(
                   icon: const Icon(Icons.build, size: 20),

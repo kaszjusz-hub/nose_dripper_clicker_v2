@@ -51,7 +51,7 @@ class _NoseScreenState extends State<NoseScreen>
     super.dispose();
   }
 
-  void _onTap() {
+  void _onTap(TapDownDetails details) {
     gs.clickNose();
     _charController.forward(from: 0);
     _addParticle();
@@ -91,7 +91,7 @@ class _NoseScreenState extends State<NoseScreen>
                       ),
                     ),
                     GestureDetector(
-                      onTap: _onTap,
+                      onTapDown: _onTap,
                       behavior: HitTestBehavior.opaque,
                       child: AnimatedBuilder(
                         animation: _charController,
@@ -109,7 +109,7 @@ class _NoseScreenState extends State<NoseScreen>
                         child: const Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('🤧', style: TextStyle(fontSize: 120)),
+                            Text('🤧', style: TextStyle(fontSize: 156)), // 120 * 1.3 = 156
                             SizedBox(height: 8),
                             Text('KLIKNIJ!',
                                 style: TextStyle(
@@ -120,7 +120,7 @@ class _NoseScreenState extends State<NoseScreen>
                           ],
                         ),
                       ),
-                    ),
+                    ,
                     ..._buildParticleWidgets(),
                   ],
                 ),
@@ -187,6 +187,11 @@ class _NoseScreenState extends State<NoseScreen>
             ],
           ),
           if (gs.comboPoints > 5) ...[
+            const SizedBox(height: 4),
+            Text(
+              "🔥 Combo: ${gs.comboPoints.toInt()} (×${gs.comboMultiplier.toStringAsFixed(2)})",
+              style: const TextStyle(color: Color(0xFFa8ff5a), fontSize: 12, fontWeight: FontWeight.bold),
+            ),
           ],
         ],
       ),

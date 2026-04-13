@@ -76,7 +76,7 @@ class _NoseScreenState extends State<NoseScreen>
         child: Column(
           children: [
             _buildHUD(),
-            // POSTAĆ (character) — flex 3
+            // POSTAĆ (character) - flex 3
             Expanded(
               flex: 3,
               child: Container(
@@ -120,15 +120,15 @@ class _NoseScreenState extends State<NoseScreen>
                           ],
                         ),
                       ),
-                    ,
+                    ),
                     ..._buildParticleWidgets(),
                   ],
                 ),
               ),
             ),
-            // KANAŁ visualization — fixed height
+            // KANAŁ visualization - fixed height
             _buildCanalVisualization(gs),
-            // UPGRADE PANEL — scrollable
+            // UPGRADE PANEL - scrollable
             Expanded(
               flex: 2,
               child: _buildUpgradePanel(),
@@ -378,37 +378,39 @@ class _NoseScreenState extends State<NoseScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         border: Border(top: BorderSide(color: const Color(0xFF2d3d1e), width: 2)),
       ),
-      child: Column(
-        children: [
-          // Nose expansion tile
-          ExpansionTile(
-            title: const Text('👃 NOSE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            initiallyExpanded: true,
-            onExpansionChanged: (exp) {},
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Nose expansion tile
+            ExpansionTile(
+              title: const Text('👃 NOSE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              initiallyExpanded: true,
+              onExpansionChanged: (exp) {},
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: _buildNoseTab(),
                 ),
-                child: _buildNoseTab(),
-              ),
-            ],
-          ),
-          // Room expansion tile
-          ExpansionTile(
-            title: const Text('🛋️ ROOM', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            initiallyExpanded: false,
-            onExpansionChanged: (exp) {},
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
+              ],
+            ),
+            // Room expansion tile
+            ExpansionTile(
+              title: const Text('🛋️ ROOM', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              initiallyExpanded: false,
+              onExpansionChanged: (exp) {},
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: _buildRoomTab(),
                 ),
-                child: _buildRoomTab(),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -661,7 +663,7 @@ class _SlimeWavePainterMini extends CustomPainter {
     path.moveTo(0, 0);
     for (double x = 0; x <= size.width; x += 4) {
       final frac = x / size.width;
-      
+
           2.0 * (2.0 * frac * (1.0 - frac) - 0.5).abs() +
           waveHeight * 0.3 * (frac * 6.2832 + waveT * 2.0).abs() % 1.0;
     }

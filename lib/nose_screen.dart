@@ -192,13 +192,13 @@ class _NoseScreenState extends State<NoseScreen>
               "🔥 Combo: ${gs.comboPoints.toInt()} (×${gs.comboMultiplier.toStringAsFixed(2)})",
               style: const TextStyle(color: Color(0xFFa8ff5a), fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            Expanded(
-              flex: 3,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(2),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: Container(
+                height: 4,
                 child: LinearProgressIndicator(
                   value: (gs.comboPoints % 5) / 5,
-                  minHeight: 4,
                   backgroundColor: const Color(0xFF1a1f13),
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFd4af37)),
                 ),

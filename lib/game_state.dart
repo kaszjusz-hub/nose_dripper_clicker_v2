@@ -191,12 +191,12 @@ class GameState {
   // on top of 100 base keeps nose upgrades a meaningful but not dominant
   // source of income vs room upgrades (passive drip).
   static final List<NoseUpgrade> noseUpgrades = [
-    NoseUpgrade(level: 1, name: 'Nose Lv.1', icon: '👃', baseCost: 1, perClickBonus: 1.0),
-    NoseUpgrade(level: 2, name: 'Nose Lv.2', icon: '👃', baseCost: 3, perClickBonus: 2.0),
-    NoseUpgrade(level: 3, name: 'Nose Lv.3', icon: '👃', baseCost: 8, perClickBonus: 3.0),
-    NoseUpgrade(level: 4, name: 'Nose Lv.4', icon: '🧬👃', baseCost: 15, perClickBonus: 4.0),
-    NoseUpgrade(level: 5, name: 'Nose Lv.5', icon: '🧬👃', baseCost: 28, perClickBonus: 5.0),
-    NoseUpgrade(level: 6, name: 'Nose Lv.6', icon: '🧬👃', baseCost: 45, perClickBonus: 6.0),
+    NoseUpgrade(level: 1, name: 'Nose Lv.1', icon: '👃', baseCost: 5, perClickBonus: 0.1),
+    NoseUpgrade(level: 2, name: 'Nose Lv.2', icon: '👃', baseCost: 50, perClickBonus: 1.0),
+    NoseUpgrade(level: 3, name: 'Nose Lv.3', icon: '👃', baseCost: 500, perClickBonus: 10.0),
+    NoseUpgrade(level: 4, name: 'Nose Lv.4', icon: '🧬👃', baseCost: 5000, perClickBonus: 100.0),
+    NoseUpgrade(level: 5, name: 'Nose Lv.5', icon: '🧬👃', baseCost: 50000, perClickBonus: 1000.0),
+    NoseUpgrade(level: 6, name: 'Nose Lv.6', icon: '🧬👃', baseCost: 500000, perClickBonus: 10000.0),
   ];
 
   // ── Room upgrade definitions ─────────────────────────────────────────
@@ -293,7 +293,7 @@ class GameState {
   int noseCost(int level) {
     final def = _getNoseDef(level);
     final count = noseLevels[level] ?? 0;
-    return (def.baseCost * pow(1.8, count)).round();
+    return (def.baseCost * pow(1.25, count)).round();
   }
 
   /// Cost for next room upgrade at given level

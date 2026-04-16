@@ -168,8 +168,7 @@ class _NoseScreenState extends State<NoseScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (gs.comboPoints > 5)
-                Text('🔥 ×${gs.comboMultiplier.toStringAsFixed(2)}',
+              Text('🔥 ×${gs.comboMultiplier.toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: Color(0xFFa8ff5a),
                     fontSize: 11,
@@ -198,7 +197,7 @@ class _NoseScreenState extends State<NoseScreen>
               child: Container(
                 height: 4,
                 child: LinearProgressIndicator(
-                  value: (gs.comboPoints % 5) / 5,
+                  value: gs.comboPoints / 200,
                   backgroundColor: const Color(0xFF1a1f13),
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFd4af37)),
                 ),

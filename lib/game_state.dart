@@ -503,14 +503,7 @@ class GameState {
 
   NoseUpgrade _getNoseDef(int level) {
     if (level < 1 || level > 6) throw RangeError('Nose level must be 1–6');
-    final costMult = level <= 3 ? pow(2.5, level - 1) : pow(3.0, level - 1);
-    return NoseUpgrade(
-      level: level,
-      name: 'Nose Lv.$level',
-      icon: level <= 3 ? '👃' : '🧬👃',
-      baseCost: (100 * costMult).round(),
-      perClickBonus: 50.0 * level,
-    );
+    return noseUpgrades.firstWhere((upgrade) => upgrade.level == level);
   }
 
   void _spawnVirus() {

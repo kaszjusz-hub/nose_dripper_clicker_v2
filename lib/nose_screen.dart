@@ -450,7 +450,7 @@ class _NoseScreenState extends State<NoseScreen>
             _upgradeCard(
               icon: upg.icon,
               name: upg.name,
-              subtitle: '+${effectiveBonus.toInt()} glut/klik$multLabel',
+              subtitle: '+${effectiveBonus.toStringAsFixed(1)} glut/klik$multLabel',
               owned: owned.toString(),
               cost: cost.toStringAsFixed(0),
               canBuy: canBuy,

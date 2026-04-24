@@ -1,0 +1,29 @@
+# Nose balance configuration for L1–L6
+# C(L): cost to purchase nose at level L
+# G(L): glut/klik required per purchase at level L
+# Scaling: C(L+1) = C(L) * 1.25, G(L+1) = G(L) * 5
+
+nose_levels:
+  1:
+    cost: 5
+    glut_per_click: 0.1
+  2:
+    cost: 6.25
+    glut_per_click: 0.5
+  3:
+    cost: 7.8125
+    glut_per_click: 2.5
+  4:
+    cost: 9.765625
+    glut_per_click: 12.5
+  5:
+    cost: 12.20703125
+    glut_per_click: 62.5
+  6:
+    cost: 15.2587890625
+    glut_per_click: 312.5
+
+notes:
+  - "C(L) = 5 * 1.25^(L-1)"
+  - "G(L) = 0.1 * 5^(L-1)"
+  - "L1..L6 provided; extend as needed."

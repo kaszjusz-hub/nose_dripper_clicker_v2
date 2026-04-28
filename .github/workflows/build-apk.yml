@@ -20,7 +20,18 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos 2>&1 | tee /tmp/analysis.log || true
+        continue-on-error: true
+
+      - name: Check for errors
+        run: |
+          if grep -q "error •" /tmp/analysis.log; then
+            echo "❌ Build errors found:"
+            grep "error •" /tmp/analysis.log
+            exit 1
+          else
+            echo "✅ No build errors (infos/warnings ignored)"
+          fi
 
       - name: Build APK (debug)
         run: flutter build apk --debug

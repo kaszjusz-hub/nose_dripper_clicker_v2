@@ -37,7 +37,7 @@ class GameMechanics {
     if (_passiveTimer != null) return;
     _passiveTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       // Base passive income
-      collectGluty(GameState.passiveDripBase);
+      collectGluty(GameState.instance.passiveDrip);
     });
   }
 

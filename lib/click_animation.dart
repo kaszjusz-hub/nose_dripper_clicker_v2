@@ -92,16 +92,16 @@ class _ClickAnimationState extends State<ClickAnimation> with TickerProviderStat
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF7ec850).withOpacity(0.6),
+                  color: const Color(0xFF7ec850).withValues(alpha: 0.6),
                   blurRadius: 20,
                   spreadRadius: 10,
                 ),
               ],
             ),
-            child: Center(
+            child: const Center(
               child: Text(
                 '👃',
-                style: const TextStyle(fontSize: 48),
+                style: TextStyle(fontSize: 48),
               ),
             ),
           ),
@@ -110,3 +110,5 @@ class _ClickAnimationState extends State<ClickAnimation> with TickerProviderStat
     );
   }
 }
+
+
